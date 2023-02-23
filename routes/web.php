@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\MainController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +15,13 @@ use App\Http\Controllers\AuthController;
 |
 */
 
-Route::get('/', [AuthController::class, 'index']);
-Route::get('/signup', [AuthController::class, 'signup']);
+Route::get('/', [MainController::class, 'index']);
+Route::get('/auth/signin', [AuthController::class, 'index']);
+Route::get('/auth/signup', [AuthController::class, 'signup']);
+Route::post('/auth/signup', [AuthController::class, 'signup_post']);
+Route::post('/auth/signin', [AuthController::class, 'signin']);
 
+
+Route::middleware('auth')->group( function() {
+    Route::get('/auth/signout', [AuthController::class, 'signout']);
+});

@@ -1,7 +1,7 @@
 @extends('layout.index')
 
+@section('head_include')
+
 @section('content')
-<div class="wrap">
-    hi
-</div>
+    메인페이지
 @endsection
