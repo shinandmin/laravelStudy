@@ -12,16 +12,19 @@
                 </li>
                 <li class="nav-item">
                     @auth
-                        <a class="nav-link" href="#">로그아웃</a>
+                        <a class="nav-link" href="{{ url('/auth/signout') }}">로그아웃</a>
                     @endauth
                     @guest
-                        <a class="nav-link" href="#">로그인</a>
+                        <a class="nav-link" href="{{ url('/auth/signin') }}">로그인</a>
                     @endguest
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link disabled">Disabled</a>
-                </li>
             </ul>
+        </div>
+        <div>
+            @auth
+                {{ auth()->user()->name }}님, 환영합니다.
+            @endauth
+
         </div>
     </div>
 </nav>
