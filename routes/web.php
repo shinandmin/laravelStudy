@@ -15,4 +15,5 @@ use App\Http\Controllers\AuthController;
 */
 
 Route::get('/', [AuthController::class, 'index']);
+Route::get('/signup', [AuthController::class, 'signup']);
 
