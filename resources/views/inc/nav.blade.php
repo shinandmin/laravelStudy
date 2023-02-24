@@ -8,7 +8,12 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="#">Home</a>
+                    @auth
+                        <a class="nav-link active" aria-current="page" href="/">Home</a>
+                    @endauth
+                    @guest
+                        <a class="nav-link active" aria-current="page" href="/auth/signin">Home</a>
+                    @endguest
                 </li>
                 <li class="nav-item">
                     @auth
