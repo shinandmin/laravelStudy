@@ -41,9 +41,8 @@ class MainController extends Controller
         $result_list = $result->response->body->items->item;
 
         // 지역 1단계 리스트
-        $area1_list = Position::select('1st')->groupByRaw('1st')->first();
-        print_r($area1_list);
-
+//        $area1_list = Position::select('1st')->groupByRaw('1st')->first();
+//        print_r($area1_list);
 
         return view('index', ['result_list' => $result_list]);
     }
