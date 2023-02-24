@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Position;
 
 class MainController extends Controller
 {
@@ -38,7 +39,12 @@ class MainController extends Controller
 
         $result = json_decode($response);
         $result_list = $result->response->body->items->item;
-        // print_r($result_list);
+
+        // 지역 1단계 리스트
+        $area1_list = Position::select('1st')->groupByRaw('1st')->first();
+        print_r($area1_list);
+
+
         return view('index', ['result_list' => $result_list]);
     }
 }
