@@ -16,7 +16,7 @@
                     <input type="password" class="form-control" name="password" id="password">
                 </div>
                 <div class="d-grid gap-2 d-md-flex justify-content-sm-end">
-                    <a href="{{ url('/signup') }}"><button class="btn btn-primary me-md-2" type="button">회원가입</button></a>
+                    <a href="{{ url('/auth/signup') }}"><button class="btn btn-primary me-md-2" type="button">회원가입</button></a>
                     <button class="btn btn-primary" type="submit">로그인</button>
                 </div>
 
