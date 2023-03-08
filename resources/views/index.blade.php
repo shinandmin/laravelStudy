@@ -9,17 +9,16 @@
                 <h2 class="accordion-header" id="headingOne">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                             data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                        @if (isset($my_position['area1']))
-                            {{ $my_position['area1'].' '.$my_position['area2'].' '.$my_position['area3'] }} 현재 날씨
-                        @else
-                            {{ $my_position['name'] }} 현재 날씨
-                        @endif
+                        {{ $my_position['area1'].' '.$my_position['area2'].' '.$my_position['area3'] }} 현재 날씨
                     </button>
                 </h2>
                 <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
                      data-bs-parent="#title">
                     <div class="accordion-body">
                         <ul class="list-group">
+                                    <li class="list-group-item">
+                                        미세먼지 <p style="float:right">{{ $pm10Status }}</p>
+                                    </li>
                             @foreach($result_list as $list)
                                 @switch($list->category)
                                     @case('PTY')

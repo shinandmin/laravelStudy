@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Position;
 use App\Models\MyPosition;
+use App\Models\Measuring_station;
 
 class MainController extends Controller
 {
@@ -15,13 +16,17 @@ class MainController extends Controller
             return redirect('/auth/signin');
         }
 
-        // 우리동네 정보 가져오기
+        /*--------------------------------------------------
+         * 우리동네 정보 가져오기 : default > 서울특별시 강남구 압구정동
+         *-------------------------------------------------*/
         $my_poisition = MyPosition::where('user_id', auth()->user()->id)->first();
 
         $position = array();
         $position['nx'] = "61";
         $position['ny'] = "126";
-        $position['name'] = "서울시 강남구 압구정동";
+        $position['area1'] = "서울특별시";
+        $position['area2'] = "강남구";
+        $position['area3'] = "압구정동";
 
         if ($my_poisition) {
             $my_poisition_data = Position::select('1st as area1', '2st as area2', '3st as area3', 'posX', 'posY')->where([
@@ -32,14 +37,15 @@ class MainController extends Controller
 
             $position['nx'] = $my_poisition_data->posX;;
             $position['ny'] = $my_poisition_data->posY;
-            $position['name'] = $my_poisition_data->area3;
             $position['area1'] = $my_poisition_data->area1;
             $position['area2'] = $my_poisition_data->area2;
             $position['area3'] = $my_poisition_data->area3;
-
         }
 
-        // 초단기 실황
+        /*--------------------------------------------------
+         * 날씨정보 가져오기
+         *-------------------------------------------------*/
+        // 기상청 - 초단기 실황정보 조회
         $data = array(
             'serviceKey' => 'GunMw/0SkOU9IOCdYEpaU6MQDlcp2Gs26sDb3fUAFU3SxoSQI80ArRDvrQ0fQZhO0Obhlw4QPzVCcSXOo+2dHw==',
             'numOfRows' => '10',
@@ -53,25 +59,22 @@ class MainController extends Controller
 
         $url = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst" . "?" . http_build_query($data, '');
 
-        $ch = curl_init();                                              //curl 초기화
-        curl_setopt($ch, CURLOPT_URL, $url);                      //URL 지정하기
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);     //요청 결과를 문자열로 반환
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);        //connection timeout 5초
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);     //원격 서버의 인증서가 유효한지 검사 안함
-
-        $response = curl_exec($ch);
-        curl_close($ch);
-
-        $result = json_decode($response);
+        $do_curl = do_curl($url);
 
         $result_list = "";
-        if ($result) {
-            $result_list = $result->response->body->items->item;
+        if ($do_curl) {
+            $result_list = $do_curl->response->body->items->item;
         }
 
-        // 미세먼지
+        /*--------------------------------------------------
+         * 미세먼지 정보 가져오기
+         *-------------------------------------------------*/
+        // 측정소 정보 가져오기
+        $getMeasuring = Measuring_station::where('agency', 'LIKE', $position['area1'].'%')->where('address', 'LIKE', '%'.$position['area2'].'%')->first();
+
+        // 에어코리아 - 대기오염정보 조회 서비스
         $data2 = array(
-            'stationName' => '종로구',
+            'stationName' => $getMeasuring->measuring_station,
             'dataTerm' => 'DAILY',
             'pageNo' => '1',
             'numOfRows' => '1',
@@ -81,27 +84,40 @@ class MainController extends Controller
 
         $url2 = "http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty" . "?" . http_build_query($data2, '');
 
-        $ch2 = curl_init();                                              //curl 초기화
-        curl_setopt($ch2, CURLOPT_URL, $url2);                      //URL 지정하기
-        curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);     //요청 결과를 문자열로 반환
-        curl_setopt($ch2, CURLOPT_CONNECTTIMEOUT, 5);        //connection timeout 5초
-        curl_setopt($ch2, CURLOPT_SSL_VERIFYPEER, false);     //원격 서버의 인증서가 유효한지 검사 안함
-
-        $response2 = curl_exec($ch2);
-        curl_close($ch2);
-
-        $result2 = json_decode($response2);
+        $do_curl2 = do_curl($url2);
 
         $result_list2 = "";
-        if ($result2) {
-            $result_list2 = $result2->response->body->items[0];
+        if ($do_curl2) {
+            $result_list2 = $do_curl2->response->body->items[0];
         }
 
-        echo $result_list2->dataTime;
+        $pm10Status = "";
+        switch ($result_list2->pm10Grade) {
+            case 1 :
+                $pm10Status = "좋음";
+                break;
+            case 2 :
+                $pm10Status = "보통";
+                break;
+            case 3 :
+                $pm10Status = "나쁨";
+                break;
+            case 4 :
+                $pm10Status = "매우나쁨";
+                break;
+        }
 
         // 지역 1단계 리스트
         $area1_list = Position::select('1st')->groupByRaw('1st')->get();
 
-        return view('index', ['result_list' => $result_list, 'area1_list' => $area1_list, 'my_position' => $position]);
+        /*--------------------------------------------------
+         * view 전달 데이터 리스트
+         *--------------------------------------------------
+         * result_list : 기상청 초단기 실황정보 조회 결과
+         * area1_list : 1단계 지역 리스트
+         * my_position : 우리동네 정보
+         * pm10Status : 우리동네 미세먼지 정보
+         *-------------------------------------------------*/
+        return view('index', ['result_list' => $result_list, 'area1_list' => $area1_list, 'my_position' => $position, 'pm10Status' => $pm10Status]);
     }
 }
