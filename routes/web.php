@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MainController;
+use App\Http\Controllers\PositionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,7 +22,9 @@ Route::get('/auth/signup', [AuthController::class, 'signup']);
 Route::post('/auth/signup', [AuthController::class, 'signup_post']);
 Route::post('/auth/signin', [AuthController::class, 'signin']);
 
-
 Route::middleware('auth')->group( function() {
     Route::get('/auth/signout', [AuthController::class, 'signout']);
+    Route::get('/area', [PositionController::class, 'get']);
+    Route::post('/myArea', [PositionController::class, 'myArea']);
+
 });

@@ -9,7 +9,11 @@
                 <h2 class="accordion-header" id="headingOne">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                             data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                        압구정동 현재 날씨
+                        @if (isset($my_position['area1']))
+                            {{ $my_position['area1'].' '.$my_position['area2'].' '.$my_position['area3'] }} 현재 날씨
+                        @else
+                            {{ $my_position['name'] }} 현재 날씨
+                        @endif
                     </button>
                 </h2>
                 <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
@@ -69,19 +73,70 @@
                 </h2>
                 <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingOne"
                      data-bs-parent="#title">
-                    <div class="accordion-body">
-                        <select class="form-control" style="width:200px;display:inline-block" id="area1">
-                            <option>지역 1단계</option>
-                        </select>
-                        <select class="form-control" style="width:200px;display:inline-block" id="area2">
-                            <option>지역 2단계</option>
-                        </select>
-                        <select class="form-control" style="width:200px;display:inline-block" id="area3">
-                            <option>지역 3단계</option>
-                        </select>
-                    </div>
+                    <form method="POST" action="/myArea">
+                        @csrf
+                        <div class="accordion-body">
+                            <select class="form-control" style="width:200px;display:inline-block" id="area1" name="area1" onchange="loadArea(this.value, 1)">
+                                <option value="default">지역 1단계</option>
+                                @foreach($area1_list as $area1)
+                                <option value="{{ $area1['1st'] }}">{{ $area1['1st'] }}</option>
+                                @endforeach
+                            </select>
+                            <select class="form-control" style="width:200px;display:inline-block" id="area2" name="area2" onchange="loadArea(this.value, 2)">
+                                <option>지역 2단계</option>
+                            </select>
+                            <select class="form-control" style="width:200px;display:inline-block" id="area3" name="area3">
+                                <option>지역 3단계</option>
+                            </select>
+                            <button class="btn btn-primary" type="submit">저장</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        function loadArea(selArea, depth) {
+            var nextDepth = depth + 1;
+            var area1 = "";
+
+            if (depth == 2) area1 = $('#area1').val();
+
+            if (selArea != "default") {
+                $.ajax({
+                    type: "GET",
+                    url: "/area",
+                    data: {
+                        depth : depth,
+                        area : selArea,
+                        area1 : area1,
+                    },
+                    dataType: 'JSON',
+                    success: function success(data) {
+                        var areaList = '<option value="default">지역 '+nextDepth+'단계</option>';
+                        $.each(data, function (index, element) {
+                            areaList += '<option value="'+element[nextDepth+'st']+'">'+element[nextDepth+'st']+'</option>';
+                        });
+
+                        if (depth == 1) {
+                            $('#area3').html('<option value="default">지역 3단계</option>');
+                        }
+                        $('#area'+nextDepth).html(areaList);
+                    },
+                    error: function (response) {
+                        console.log(response);
+                    }
+                })
+            } else {
+                if (depth == 1) {
+                    $('#area2').html('<option value="default">지역 2단계</option>');
+                    $('#area3').html('<option value="default">지역 3단계</option>');
+                } else if (depth == 2) {
+                    $('#area3').html('<option value="default">지역 3단계</option>');
+                }
+
+            }
+        }
+    </script>
 @endsection
