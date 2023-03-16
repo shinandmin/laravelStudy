@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg bg-light">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">Sungmin's Study</a>
+    <div class="container center">
+        <a class="navbar-brand" href="@php if (isset(auth()->user()->name)) echo "/auth/signin"; else echo "/"; @endphp">우리동네</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
